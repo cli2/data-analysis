@@ -1,0 +1,54 @@
+---
+title: "si618hw6_report_chongli"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Step 1: Load data
+
+First load the provided TSV data file using the **read.table()** function. Then print the first 15 rows of the data frame.
+
+```{r echo=FALSE, fig.width=7}
+country <- read.table("countrydata_withregion.tsv",head=TRUE,sep = "\t",quote = "", fileEncoding="windows-1252")
+head(country,n=15)
+```
+
+## Step 2: Scatter plot of log transformed data 
+
+Compute the natural logarithm of the area and the population of each country to produce a scatter plot using the plot(), qplot() or ggplot() functions. The following chart is created using **qplot()**.
+
+```{r echo=FALSE, fig.width=7}
+logArea <- log(country$area)
+logPop <- log(country$population)
+library(ggplot2)
+qplot(logArea,logPop, xlab="log(area)",ylab="log(population)")
+```
+
+## Step 3: Data aggregation by region
+
+Sum the areas and populations of all countries by region using the **aggregate()** function, respectively. Then create two pie charts using the **pie()** function showing the areas of regions and populations of regions, respectively. The following charts are created using **pie()**.
+
+```{r echo=FALSE, fig.width=7}
+aggArea <- aggregate(country$area,by=list(region = country$region), sum)
+aggPop <- aggregate(as.numeric(country$population),by=list(region = country$region), sum)
+pie(aggArea$x,labels=aggArea$region,main="Area of Regions")
+```
+
+```{r echo=FALSE, fig.width=7}
+pie(aggPop$x,labels=aggPop$region,main="Population of Regions")
+```
+
+## Step 4: Visualization of Population per sq km of Region
+
+Create a new data frame to hold the population per sq km of each region using the **data.frame()** function. Then sort the data frame by population per sq km in decreasing order with the help of the **order()** function. Finally, the following chart is created using **ggplot()**.
+
+```{r echo=FALSE, fig.width=7}
+popPerKm <- aggPop$x / aggArea$x
+newFrame <- data.frame(popPerKm,region=aggPop$region)
+newFrame <- newFrame[order(newFrame$popPerKm,decreasing = TRUE),]
+ggplot(newFrame, aes(x=region,y = popPerKm)) +geom_bar(stat = "identity")+theme(axis.text.x = element_text(angle = 60, hjust = 1)) + labs(x="region",y="Population per sq km of Regions")
+```
+
